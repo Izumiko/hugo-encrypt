@@ -10,7 +10,7 @@ Environmental dependence: go 1.11+
 
 **Step 1: Install Hugo-Encrypt.**
 
-    $ go get github.com/Izumiko/hugo_encrypt.git
+    $ go get github.com/Izumiko/hugo-encrypt
 
 **Step 2: Place `hugo-encrypt` in the root directory of your blog, or add `hugo-encrypt` to `PATH`**
 
