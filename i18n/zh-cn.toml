@@ -1,0 +1,11 @@
+[protectedbypwd]
+other = "以下内容被密码保护"
+
+[inputpassword]
+other = "请输入密码"
+
+[submit]
+other = "提交"
+
+[wrongpwd]
+other = "密码错误"

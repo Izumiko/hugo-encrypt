@@ -1,0 +1,11 @@
+[protectedbypwd]
+other = "The following content is password protected."
+
+[inputpassword]
+other = "Please input the password"
+
+[submit]
+other = "Submit"
+
+[wrongpwd]
+other = "Wrong password"

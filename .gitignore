@@ -1,0 +1,8 @@
+/archetypes/
+/content/
+/layouts/
+/public/
+/static/
+/themes/
+/config.toml
+hugo.exe

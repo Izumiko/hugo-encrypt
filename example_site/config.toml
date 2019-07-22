@@ -1,0 +1,3 @@
+DefaultContentLanguage = "zh-cn"
+[params]
+    hugoEncryptorStorage = "session" # or "local"
