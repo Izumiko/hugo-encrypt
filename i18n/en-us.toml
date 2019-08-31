@@ -1,11 +1,11 @@
-[protectedbypwd]
-other = "The following content is password protected."
+[protectedByPassword]
+other = "The following content is protected."
 
-[inputpassword]
-other = "Please input the password"
+[enterPassword]
+other = "Please enter the password."
 
-[submit]
-other = "Submit"
+[decrypt]
+other = "Decrypt"
 
-[wrongpwd]
-other = "Wrong password"
+[wrongPassword]
+other = "Password is incorrect"

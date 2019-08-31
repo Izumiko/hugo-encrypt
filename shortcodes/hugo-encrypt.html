@@ -1,0 +1,140 @@
+{{ $_hugo_config := `{ "version": 1 }` }}
+
+<hugo-encrypt>
+	{{ if .Get 0 }}
+		{{- $passphrase := $.Scratch.Set "passphrase" (.Get 0) -}}
+	{{ else if .Site.Params.HugoEncrypt.Password }}
+		{{- $passphrase := $.Scratch.Set "passphrase" .Site.Params.HugoEncrypt.Password -}}
+	{{ else }}
+		{{- $passphrase -}}
+	{{ end }}
+	<p>{{ i18n "protectedByPassword" }}</p>
+
+	<div class='hugo-encrypt-form'>
+		<input
+			class="hugo-encrypt-input"
+			id="hugo-encrypt-password"
+			placeholder='{{ i18n "enterPassword" }}'
+		/>
+		<input
+			class="hugo-encrypt-button"
+			type="button"
+			value='{{ i18n "decrypt" }}'
+			id="button" onclick="hugoDecrypt(document.getElementById('hugo-encrypt-password').value,'input')"
+		/>
+		<div id="input-response"></div>
+	</div>
+	<cipher-text data-password='{{ $.Scratch.Get "passphrase" }}' style="display:none;">
+		{{ .Inner }}
+	</cipher-text>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/core.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/sha1.js"></script>
+	<script>
+		let cipher = document.getElementsByTagName("cipher-text")[0];
+		const storageKey = location.pathname + "password";
+		const userStorage = {{ if .Site.Params.HugoEncrypt.Storage }} window['{{.Site.Params.HugoEncrypt.Storage}}Storage'] {{ else }} localStorage {{ end }};
+		/**
+		 * Encodes a utf8 string as a byte array.
+		 * @param {String} str
+		 * @returns {Uint8Array}
+		 */
+		function str2buf(str) {
+			return new TextEncoder("utf-8").encode(str);
+		}
+		/**
+		 * Decodes a byte array as a utf8 string.
+		 * @param {Uint8Array} buffer
+		 * @returns {String}
+		 */
+		function buf2str(buffer) {
+			return new TextDecoder("utf-8").decode(buffer);
+		}
+		/**
+		 * Decodes a string of hex to a byte array.
+		 * @param {String} hexStr
+		 * @returns {Uint8Array}
+		 */
+		function hex2buf(hexStr) {
+			return new Uint8Array(hexStr.match(/.{2}/g).map(h => parseInt(h, 16)));
+		}
+		/**
+		 * Given a passphrase, this generates a crypto key
+		 * using `PBKDF2` with SHA256 and 1000 iterations.
+		 * If no salt is given, a new one is generated.
+		 * The return value is an array of `[key, salt]`.
+		 * @param {String} passphrase
+		 * @param {UInt8Array} salt [salt=random bytes]
+		 * @returns {Promise<[CryptoKey,UInt8Array]>}
+		 */
+		function deriveKey(passphrase, salt) {
+			salt = salt || crypto.getRandomValues(new Uint8Array(8));
+			return crypto.subtle
+				.importKey("raw", str2buf(passphrase), "PBKDF2", false, ["deriveKey"])
+				.then(key =>
+					crypto.subtle.deriveKey(
+						{ name: "PBKDF2", salt, iterations: 1000, hash: "SHA-256" },
+						key,
+						{ name: "AES-GCM", length: 256 },
+						false,
+						["encrypt", "decrypt"],
+					),
+				)
+				.then(key => [key, salt]);
+		}
+		/**
+		 * Given a key and ciphertext (in the form of a string) as given by `encrypt`,
+		 * this decrypts the ciphertext and returns the original plaintext
+		 * @param {String} passphrase
+		 * @param {String} saltIvCipherHex
+		 * @returns {Promise<String>}
+		 */
+		function decrypt(passphrase, saltIvCipherHex) {
+			const [salt, iv, data] = saltIvCipherHex.split("-").map(hex2buf);
+			return deriveKey(passphrase, salt)
+				.then(([key]) => crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data))
+				.then(v => buf2str(new Uint8Array(v)));
+		}
+		/**
+		/**
+		 * @name:hugoDecrypt
+		 * @description: judge the password ,and decrypt post
+		 * @param {String} password
+		 * @param {String} type
+		 */
+		const hugoDecrypt = function(password, type) {
+				decrypt(password, cipher.innerText).then(function(decrypted_text) {
+					/**
+					* calculate sha1 of decrypted text and check if it
+					* matches the sha1 at the bottom of the decrypted text
+					* to get the same hash that was added during encryption we
+					* need to remove the last line
+					*/
+					let hash = CryptoJS.SHA1(decrypted_text.replace(/\r?\n?[^\r\n]*$/, ""));
+					let sha1_sum = CryptoJS.enc.Hex.stringify(hash);
+
+					if ( decrypted_text.includes(sha1_sum) ) {
+						cipher.parentElement.outerHTML = decrypted_text;
+						userStorage.setItem(storageKey, password);
+                        document.getElementById("sha1sum").innerHTML = "Success: " + sha1_sum;
+                        console.log("Decryption successful. Storing password in {{.Site.Params.HugoEncrypt.Storage}}Storage.");
+					}
+					}).catch(function(error) {
+                    if (type === "input") {
+                        document.getElementById("input-response").innerHTML = "{{ i18n "wrongPassword" }}";
+                        console.log('{{ i18n "wrongPassword" }}', error);
+                    } else if (type === "storage") {
+                        userStorage.removeItem(location.pathname + "password");
+                        console.log("Password changed. Clearing userStorage.", error);
+                    }
+                });
+			};
+	</script>
+	<script>
+		window.onload = () => {
+			if (userStorage.getItem(storageKey)) {
+				console.log("Found storageKey in userStorage. Attemtping decryption");
+				hugoDecrypt(userStorage.getItem(storageKey), "storage");
+			}
+		};
+	</script>
+</hugo-encrypt>
