@@ -2,7 +2,7 @@ FROM golang:alpine AS builder
 
 RUN apk add --no-cache git
 
-RUN git clone https://github.com/chaosbunker/hugo-encrypt /hugo-encrypt
+RUN git clone https://github.com/Izumiko/hugo-encrypt /hugo-encrypt
 
 WORKDIR /hugo-encrypt
 
