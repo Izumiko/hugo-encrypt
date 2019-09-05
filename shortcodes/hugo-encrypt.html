@@ -119,7 +119,7 @@
 						document.getElementById("hugo-encrypt-encryption-notice").remove();
 						cipher.outerHTML = decrypted_text;
 						userStorage.setItem(storageKey, password);
-                        document.getElementById("sha1sum").innerHTML = "Success: " + sha1_sum;
+                        document.getElementById("hugo-encrypt-sha1sum").innerHTML = "Success: " + sha1_sum;
                         console.log("Decryption successful. Storing password in {{.Site.Params.HugoEncrypt.Storage}}Storage.");
 					}
 					}).catch(function(error) {
