@@ -1,123 +1,126 @@
-# Hugo Encrypt
+## hugo-encrypt
 
-**Hugo-Encrypt** is a golang port of [Hugo Encryptor](https://github.com/Li4n0/hugo_encryptor)
-   
-**Hugo-Encrypt** is a tool to protect your [Hugo](https://gohugo.io) posts. It uses AES-256-GCM to encrypt the contents of your posts, and inserts a snippet of `<script>` code to verify whether the password is correct or not in readers' browser. Without a correct key, nobody can decrypt your private posts.
+`hugo-encrypt` is a golang port of [Hugo Encryptor](https://github.com/Li4n0/hugo_encryptor)
 
-## Installation
+`hugo-encrypt` is a tool that encrpyts content in your [Hugo](https://gohugo.io) posts. It uses AES-256-GCM to encrypt the contents of your posts, and inserts the necessary javascript code into the encrypted posts that decrypts the content after the correntc passphrase has been entered.
 
-Environmental dependence: go 1.11+
+1. [Installation and Usage](#installation-and-usage)
 
-**Step 1: Install Hugo-Encrypt.**
+2. [Configuration](#configuration)
 
-    $ go get github.com/Izumiko/hugo-encrypt
+3. [Using the `{{% hugo-encrypt %}}` tag in your blog posts](#using-the--hugo-encrypt--tag-in-your-blog-posts)
 
-**Step 2: Place `hugo-encrypt` in the root directory of your blog, or add `hugo-encrypt` to `PATH`**
+### Installation and Usage
 
-    $ cp hugo-encrypt /path/to/your/blog/
+    $ export HUGO_BLOG=/path/to/hugo/blog
 
-    or
+Place `shortcodes/hugo-encrypt.html` in the shortcode directory of your blog:
 
-    $ export PATH=/path/of/hugo-encrypt/:$PATH
+    $ mkdir -p $HUGO_BLOG/layouts/shortcodes
+    $ cp shortcodes/hugo-encrypt.html $HUGO_BLOG/layouts/shortcodes
 
-**Step 3: Place `shortcodes/hugo-encryptor.html` in the shortcode directory of your blog:**
+Merge i18n translation files or add it to an existing language file. Remember to set language in your [configuration](#configuration).
+    
+    $ cat i18n/en.toml >> $HUGO_BLOG/i18n/en-us.toml
+    $ cp -r i18n $HUGO_BLOG
 
-    $ mkdir -p /path/to/your/blog/layouts/shortcodes
-    $ cp shortcodes/hugo-encryptor.html /path/to/your/blog/layouts/shortcodes/hugo-encryptor.html
 
-**Step 4: Merge i18n translation files and/or add your own language.**
+**Option A:** Build it
 
-    $ cp -r i18n /path/to/your/blog/
+- Requirements: go 1.11+
 
-## Usage
+- **Step 1:** Install `hugo-encrypt`.
 
-**Step 1: Use `hugo-encryptor` tag surround the text you want to encrypt **
+	(Optional) set the BINDIR to specify a custom install location (default: /usr/local/bin)
 
-**Attention! There must be some text and the `<!--more-->` tag before the hugo-encryptor:**
+		$ # export BINDIR=$HUGO_BLOG
+		$
+		$ # Then build and install
+		$
+		$ make
+		$ make install
+
+- **Step 2:** Use hugo-encrypt to encrypt content
+
+        $ # If not in $PATH, add it first
+        $ export PATH=/path/to/hugo-encrypt:$PATH
+        $
+        $ hugo
+        $ hugo-encrypt -sitePath $HUGO_BLOG/public
+
+**Option B:** Use docker
+
+- Requirements: docker
+
+        $ hugo
+        $ docker run -it --rm \
+            -v $HUGO_BLOG/public:/data/site \
+            chaosbunker/hugo-encrypt hugo-encrypt -sitePath /data/site`
+
+After generating the site with `hugo` and running `hugo-encrypt` all the private posts in your `public` directory are encrypted and the site can be published.
+
+### Configuration
+
+#### Setting a global password
+
+```toml
+[params.hugoEncrypt]
+    password = "yourpassword"
+```
+
+#### Password storage
+
+`hugo-encrypt` uses _localStorage_ by default. This means the passphrase is permanently stored in the browser. By adding the `hugoEncrypt.Storage` param in your blog's config file you can set the storage method to _sessionStorage_.
+
+```toml
+[params.hugoEncrypt]
+    storage = "session" # or "local"
+```
+
+**localStorage**:
+
+Once a visitor entered the correct passphrase the authorization status will not expire. The visitor can read the article until the passphrase has been changed or the browser cache is cleared.
+
+**sessionStorage**:
+
+Once a visitor entered the correct passphrase the authorization will expire after the browser is closed.
+
+### Using the `{{% hugo-encrypt %}}` tag in your blog posts
+
+If no password is specified in the shortcode, the password set in your config file will be used. If no password is set at all, generation of html with `hugo` fails.
+
 
 ```markdown
 ---
 title: "This Is An Encrypted Post"
 ---
 
-**There must be some text, and the summary tag is also needed:**
-<!--more-->
-{{% hugo-encryptor "PASSWORD" %}}
+This content is visible to anyone.
 
-# You cannot see me unless you've got the password!
+{{% hugo-encrypt "postspecificpassword" %}}
 
-This is the content you want to encrypt!
+This content will be encrypted!
 
-**Do remember to close the `hugo-encryptor` shortcodes tag:**
-
-{{% /hugo-encryptor %}}
+{{% /hugo-encrypt %}}
 ```
 
-**Step 2: Generate your site as usual**
+#### Language
 
-It may be something like:
-
-    $ hugo
-
-**Step 3: Get the encryption done!**
-
-    $ ./hugo-encrypt
-
-    or (if added to PATH)
-
-    $ hugo-encrypt
-
-
-Then all the private posts in your `public` directory would be encrypted thoroughly, congrats!
-
-## Configuration
-
-Although the **Hugo-Encrypt** can run without any configure, we provide some settings params to help you configure **Hugo-Encrypt** to your liking.
-
-### Language
-
-**Hugo-Encrypt** uses i18n settings to display. You can change it by param below. Be sure to add the corresponding language file to the i18n folder.
+Use i18n to display content generated by `hugo-Encrypt` in the language of your choice by setting the following param in your config file. Make sure to set the Param `DefaultContentLanguage` and add the corresponding language file to the i18n folder.
 
 ```toml
 [params]
- 		 ......
-  DefaultContentLanguage = "zh-cn"
+    DefaultContentLanguage = "en-us"
 ```
 
-### The way of client password storage
+### Attention
 
-As default,**Hugo-Encrypt** use `localStorage` to storage the password in client. By adding `hugoEncryptorStorage` param in your blog's config file, you can change the storage method into `sessionStorage`. Such as below:
+Remember to keep the source files of your encrypted posts private. Never push your blog directory into a public repository as the encryption happens after generating the html files with `hugo`.
 
-```toml
-[params]
- 		 ......
-  hugoEncryptorStorage = "session" # or "local"
-```
+Remember to run `hugo-encrypt` after generating your site with `hugo` to encrypt the posts you want to be passphrase-protected. You might want to use a shell script instead of `hugo` to take care of both steps:
 
-For the difference of two storage ways:
+    #!/bin/bash
 
-* **localStorage**:
-
-  Once a reader input the correct password,the authorization status will not expire, the reader can read the article at any time without having to enter the password again. Unless you change the password or the reader clean his browser cache.
-
-* **sessionStorage**:
-
-  If a reader input the correct password, he could read the article without having to enter the password again until the user close his browser.
-
-### Style
-
-As default, **Hugo-Encrypt** has no style,but we have already give all the visual element a class name, you can add style for them in your css files.
-
-## Attentions
-
-* Do remember to keep the source code of your encrypted posts private. Never push your blog directory into a public repository.
-
-* Every time when you generate your site, you should run `$ hugo-encrypt` again to encrypt the posts which you want to be protected. If you are worried about you will forgot that, it's a good idea to use a shell script to take the place of  `$ hugo` ,such as below:
-
-  ```bash
-  #!/bin/bash
-  hugo && hugo-encrypt
-  ```
-
-  
+    hugo --cleanDestinationDir
+    hugo-encrypt
 
