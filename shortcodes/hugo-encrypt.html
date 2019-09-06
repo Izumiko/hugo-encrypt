@@ -8,21 +8,24 @@
 	{{ else }}
 		{{- $passphrase -}}
 	{{ end }}
-	<p>{{ i18n "protectedByPassword" }}</p>
+	<div id="hugo-encrypt-encryption-notice">
+		<p>{{ i18n "protectedByPassword" }}</p>
+		<noscript><span id="hugo-encrypt-enable-js">Javascript needs to be enabled to decrypt content</span></noscript>
 
-	<div class='hugo-encrypt-form'>
-		<input
-			class="hugo-encrypt-input"
-			id="hugo-encrypt-password"
-			placeholder='{{ i18n "enterPassword" }}'
-		/>
-		<input
-			class="hugo-encrypt-button"
-			type="button"
-			value='{{ i18n "decrypt" }}'
-			id="button" onclick="hugoDecrypt(document.getElementById('hugo-encrypt-password').value,'input')"
-		/>
-		<div id="input-response"></div>
+		<div class='hugo-encrypt-form'>
+			<input
+				class="hugo-encrypt-input"
+				id="hugo-encrypt-password"
+				placeholder='{{ i18n "enterPassword" }}'
+			/>
+			<input
+				class="hugo-encrypt-button"
+				type="button"
+				value='{{ i18n "decrypt" }}'
+				id="button" onclick="hugoDecrypt(document.getElementById('hugo-encrypt-password').value,'input')"
+			/>
+			<div id="hugo-encrypt-input-response"></div>
+		</div>
 	</div>
 	<cipher-text data-password='{{ $.Scratch.Get "passphrase" }}' style="display:none;">
 		{{ .Inner }}
@@ -113,14 +116,15 @@
 					let sha1_sum = CryptoJS.enc.Hex.stringify(hash);
 
 					if ( decrypted_text.includes(sha1_sum) ) {
-						cipher.parentElement.outerHTML = decrypted_text;
+						document.getElementById("hugo-encrypt-encryption-notice").remove();
+						cipher.outerHTML = decrypted_text;
 						userStorage.setItem(storageKey, password);
-                        document.getElementById("sha1sum").innerHTML = "Success: " + sha1_sum;
+                        document.getElementById("hugo-encrypt-sha1sum").innerHTML = "Success: " + sha1_sum;
                         console.log("Decryption successful. Storing password in {{.Site.Params.HugoEncrypt.Storage}}Storage.");
 					}
 					}).catch(function(error) {
                     if (type === "input") {
-                        document.getElementById("input-response").innerHTML = "{{ i18n "wrongPassword" }}";
+                        document.getElementById("hugo-encrypt-input-response").innerHTML = "{{ i18n "wrongPassword" }}";
                         console.log('{{ i18n "wrongPassword" }}', error);
                     } else if (type === "storage") {
                         userStorage.removeItem(location.pathname + "password");
