@@ -62,7 +62,6 @@ func encryptPage(path string) {
 		sha1_string := hex.EncodeToString(sha1_byte_array[:])
 		encrypt_this := (blockhtml + "\n<div id='hugo-encrypt-sha1sum'>" + sha1_string + "</div>")
 		encrypted_html := encrypt(password, encrypt_this)
-		doc.Find("hugo-encrypt").Remove()
 		block.RemoveAttr("data-password")
 		block.SetHtml(encrypted_html)
 		wholehtml, _ := doc.Html()
