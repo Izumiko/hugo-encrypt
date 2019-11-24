@@ -8,6 +8,6 @@ draft: false
 #Content before encryption.
 
 <!--more-->
-{{% hugo-encryptor "PASSWORD" %}}
+{{% hugo-encrypt "PASSWORD" %}}
 ##Encrypted content.
-{{% /hugo-encryptor %}}
+{{% /hugo-encrypt %}}

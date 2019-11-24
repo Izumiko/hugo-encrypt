@@ -1,3 +1,4 @@
-DefaultContentLanguage = "zh-cn"
-[params]
-    hugoEncryptorStorage = "session" # or "local"
+DefaultContentLanguage = "en-us"
+[params.hugoEncrypt]
+    password = "yourpassword"
+    storage = "session" # or "local"

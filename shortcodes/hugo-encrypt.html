@@ -30,6 +30,7 @@
 	<cipher-text data-password='{{ $.Scratch.Get "passphrase" }}' style="display:none;">
 		{{ .Inner }}
 	</cipher-text>
+	<style type="text/css">div#hugo-encrypt-sha1sum {display: none;}</style>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/core.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/sha1.js"></script>
 	<script>
