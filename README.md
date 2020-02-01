@@ -39,6 +39,15 @@ Merge i18n translation files or add it to an existing language file. Remember to
 		$
 		$ make
 		$ make install
+	
+	(Errors) from Go and Dependences.
+	
+		$ # Debian Golang Install
+		$ # sudo apt update && sudo apt install golang
+		$
+		$ # Install if 
+		$ # go get github.com/PuerkitoBio/goquery
+		$ # go get -u golang.org/x/crypto/pbkdf2
 
 - **Step 2:** Use hugo-encrypt to encrypt content
 
