@@ -1,11 +1,11 @@
-[protectedbypwd]
+[protectedByPassword]
 other = "以下内容被密码保护"
 
-[inputpassword]
+[enterPassword]
 other = "请输入密码"
 
-[submit]
+[decrypt]
 other = "提交"
 
-[wrongpwd]
+[wrongPassword]
 other = "密码错误"
