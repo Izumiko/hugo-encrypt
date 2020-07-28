@@ -2,13 +2,13 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -24,7 +24,10 @@ func deriveKey(passphrase string, salt []byte) ([]byte, []byte) {
 		salt = make([]byte, 8)
 		// http://www.ietf.org/rfc/rfc2898.txt
 		// Salt.
-		rand.Read(salt)
+		_, err := rand.Read(salt)
+		if err != nil {
+			fmt.Println("Error in reading random number.")
+		}
 	}
 	return pbkdf2.Key([]byte(passphrase), salt, 1000, 32, sha256.New), salt
 }
@@ -34,7 +37,10 @@ func encrypt(passphrase, plaintext string) string {
 	iv := make([]byte, 12)
 	// http://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf
 	// Section 8.2
-	rand.Read(iv)
+	_, err := rand.Read(iv)
+	if err != nil {
+		fmt.Println("Error in reading random number.")
+	}
 	b, _ := aes.NewCipher(key)
 	aesgcm, _ := cipher.NewGCM(b)
 	data := aesgcm.Seal(nil, iv, []byte(plaintext), nil)
@@ -50,22 +56,24 @@ func encryptPage(path string) {
 	if err != nil {
 		panic(err)
 	}
-	block := doc.Find("cipher-text")
-	if len(block.Nodes) == 1 {
-		fmt.Printf("Processing %s\n", path)
+	doc.Find("cipher-text").Each(func(i int, block *goquery.Selection) {
+		fmt.Printf("Processing %s, %d\n", path, i)
 
 		password, _ := block.Attr("data-password")
-		blockhtml, _ := block.Html()
-		data := []byte(blockhtml)
-		sha1_byte_array := sha1.Sum(data)
-		fmt.Printf("SHA1: % x\n\n", sha1_byte_array)
-		sha1_string := hex.EncodeToString(sha1_byte_array[:])
-		encrypt_this := (blockhtml + "\n<div id='hugo-encrypt-sha1sum'>" + sha1_string + "</div>")
-		encrypted_html := encrypt(password, encrypt_this)
+		blockHtml, _ := block.Html()
+		data := []byte(blockHtml)
+		sha1ByteArray := sha1.Sum(data)
+		fmt.Printf("SHA1: % x\n\n", sha1ByteArray)
+		sha1String := hex.EncodeToString(sha1ByteArray[:])
+		encryptThis := blockHtml + "\n<div id='hugo-encrypt-sha1sum'>" + sha1String + "</div>"
+		encryptedHtml := encrypt(password, encryptThis)
 		block.RemoveAttr("data-password")
-		block.SetHtml(encrypted_html)
-		wholehtml, _ := doc.Html()
-		ioutil.WriteFile(path, []byte(wholehtml), 0644)
+		block.SetHtml(encryptedHtml)
+	})
+	wholeHtml, _ := doc.Html()
+	err = ioutil.WriteFile(path, []byte(wholeHtml), 0644)
+	if err != nil {
+		panic(err)
 	}
 }
 

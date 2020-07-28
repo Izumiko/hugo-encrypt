@@ -30,11 +30,13 @@
 	<cipher-text data-password='{{ $.Scratch.Get "passphrase" }}' style="display:none;">
 		{{ .Inner }}
 	</cipher-text>
+	{{ if $.Page.Scratch.Get "decryptScript" }}
+	{{ else }}
+		{{- $decryptScript := $.Page.Scratch.Set "decryptScript" 1 -}}
 	<style type="text/css">div#hugo-encrypt-sha1sum {display: none;}</style>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/core.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/sha1.js"></script>
 	<script>
-		let cipher = document.getElementsByTagName("cipher-text")[0];
 		const storageKey = location.pathname + "password";
 		const userStorage = {{ if .Site.Params.HugoEncrypt.Storage }} window['{{.Site.Params.HugoEncrypt.Storage}}Storage'] {{ else }} localStorage {{ end }};
 		/**
@@ -106,6 +108,7 @@
 		 * @param {String} type
 		 */
 		const hugoDecrypt = function(password, type) {
+			for (const cipher of ciphers) {
 				decrypt(password, cipher.innerText).then(function(decrypted_text) {
 					/**
 					* calculate sha1 of decrypted text and check if it
@@ -120,26 +123,29 @@
 						document.getElementById("hugo-encrypt-encryption-notice").remove();
 						cipher.outerHTML = decrypted_text;
 						userStorage.setItem(storageKey, password);
-                        document.getElementById("hugo-encrypt-sha1sum").innerHTML = "Success: " + sha1_sum;
-                        console.log("Decryption successful. Storing password in {{.Site.Params.HugoEncrypt.Storage}}Storage.");
+						document.getElementById("hugo-encrypt-sha1sum").innerHTML = "Success: " + sha1_sum;
+						console.log("Decryption successful. Storing password in {{.Site.Params.HugoEncrypt.Storage}}Storage.");
 					}
-					}).catch(function(error) {
-                    if (type === "input") {
-                        document.getElementById("hugo-encrypt-input-response").innerHTML = "{{ i18n "wrongPassword" }}";
-                        console.log('{{ i18n "wrongPassword" }}', error);
-                    } else if (type === "storage") {
-                        userStorage.removeItem(location.pathname + "password");
-                        console.log("Password changed. Clearing userStorage.", error);
-                    }
-                });
-			};
+				}).catch(function(error) {
+					if (type === "input") {
+						document.getElementById("hugo-encrypt-input-response").innerHTML = "{{ i18n "wrongPassword" }}";
+						console.log('{{ i18n "wrongPassword" }}', error);
+					} else if (type === "storage") {
+						userStorage.removeItem(location.pathname + "password");
+						console.log("Password changed. Clearing userStorage.", error);
+					}
+				});
+			}
+		};
 	</script>
 	<script>
 		window.onload = () => {
+			ciphers = Array.from(document.querySelectorAll("cipher-text"));
 			if (userStorage.getItem(storageKey)) {
 				console.log("Found storageKey in userStorage. Attemtping decryption");
 				hugoDecrypt(userStorage.getItem(storageKey), "storage");
 			}
 		};
 	</script>
+	{{ end }}
 </hugo-encrypt>
