@@ -1,4 +1,4 @@
 DefaultContentLanguage = "en-us"
-[params.hugoEncrypt]
-    password = "yourpassword"
-    storage = "session" # or "local"
+[params.HugoEncrypt]
+    Password = "yourpassword"
+    Storage = "session" # or "local"

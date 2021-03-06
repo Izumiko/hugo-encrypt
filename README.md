@@ -64,8 +64,8 @@ After generating the site with `hugo` and running `hugo-encrypt` all the private
 #### Setting a global password
 
 ```toml
-[params.hugoEncrypt]
-    password = "yourpassword"
+[params.HugoEncrypt]
+    Password = "yourpassword"
 ```
 
 #### Password storage
@@ -73,8 +73,8 @@ After generating the site with `hugo` and running `hugo-encrypt` all the private
 `hugo-encrypt` uses _localStorage_ by default. This means the passphrase is permanently stored in the browser. By adding the `hugoEncrypt.Storage` param in your blog's config file you can set the storage method to _sessionStorage_.
 
 ```toml
-[params.hugoEncrypt]
-    storage = "session" # or "local"
+[params.HugoEncrypt]
+    Storage = "session" # or "local"
 ```
 
 **localStorage**:
