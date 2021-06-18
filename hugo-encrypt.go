@@ -97,5 +97,6 @@ func main() {
 	})
 	if err != nil {
 		fmt.Printf("filepath.Walk() returned %v\n", err)
+		panic(err)
 	}
 }
