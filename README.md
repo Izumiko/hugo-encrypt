@@ -2,7 +2,7 @@
 
 `hugo-encrypt` is a golang port of [Hugo Encryptor](https://github.com/Li4n0/hugo_encryptor)
 
-`hugo-encrypt` is a tool that encrpyts content in your [Hugo](https://gohugo.io) posts. It uses AES-256-GCM to encrypt the contents of your posts, and inserts the necessary javascript code into the encrypted posts that decrypts the content after the correntc passphrase has been entered.
+`hugo-encrypt` is a tool that encrpyts content in your [Hugo](https://gohugo.io) posts. It uses AES-256-GCM to encrypt the contents of your posts, and inserts the necessary javascript code into the encrypted posts that decrypts the content after the correct passphrase has been entered.
 
 1. [Installation and Usage](#installation-and-usage)
 
