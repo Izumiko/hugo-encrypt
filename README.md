@@ -26,8 +26,24 @@ Merge i18n translation files or add it to an existing language file. Remember to
     $ cat i18n/en.toml >> $HUGO_BLOG/i18n/en-us.toml
     $ cp -r i18n $HUGO_BLOG
 
+**Option A:** Use prebuilt binary
 
-**Option A:** Build it
+- **For local usage:** Download [hugo-encrypt](https://github.com/Izumiko/hugo-encrypt/releases/latest) and run it
+
+		$ # If not in $PATH, add it first
+		$ export PATH=/path/to/hugo-encrypt:$PATH
+		$
+		$ hugo
+		$ hugo-encrypt -sitePath $HUGO_BLOG/public
+
+- **For CI/CD usage (Vercel etc.):** Customize install command and build command
+
+		Install command: curl -L -o hugo-encrypt "https://github.com/Izumiko/hugo-encrypt/releases/download/v0.1.0/hugo-encrypt-linux-64" && chmod 755 hugo-encrypt
+		
+		Build command: hugo -D --gc && ./hugo-encrypt
+
+
+**Option B:** Build it
 
 - Requirements: go 1.11+
 
@@ -50,7 +66,7 @@ Merge i18n translation files or add it to an existing language file. Remember to
         $ hugo
         $ hugo-encrypt -sitePath $HUGO_BLOG/public
 
-**Option B:** Use docker
+**Option C:** Use docker
 
 - Requirements: docker
 
