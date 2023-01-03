@@ -4,6 +4,8 @@
 
 `hugo-encrypt` is a tool that encrpyts content in your [Hugo](https://gohugo.io) posts. It uses AES-256-GCM to encrypt the contents of your posts, and inserts the necessary javascript code into the encrypted posts that decrypts the content after the correct passphrase has been entered.
 
+P.S. due to the usage of WebCrypto API, hugo-encrypt only support secure content (ie. HTTPS), so unsecure content cannot call `crypto.subtle` to decrypt post.
+
 1. [Installation and Usage](#installation-and-usage)
 
 2. [Configuration](#configuration)
