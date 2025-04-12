@@ -144,4 +144,4 @@ hugo --cleanDestinationDir
 hugo-encrypt
 ```
 
-- **To prevent the accidental leaking of sensitive data, pay attention to whether the theme you used will output a summary or full text on the article list page or RSS page. If so, try adding a `<!--more-->` comment before the content to be encrypted (before `{{% hugo-encrypt }}`).**
+- **To prevent the accidental leaking of sensitive data, pay attention to whether the theme you used will output a summary or full text on the article list page or RSS page. If so, please make sure that hugo-encrypt.rss.xml is added with an empty file.**
